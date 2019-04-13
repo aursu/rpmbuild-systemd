@@ -1,0 +1,7 @@
+version: "3.4"
+services:
+  centos7systemdbase:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    image: aursu/systemdbuild:7-base
