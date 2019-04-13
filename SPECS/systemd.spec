@@ -121,9 +121,7 @@ Requires:       dbus >= 1.9.18
 Requires:       %{name}-pam = %{version}-%{release}
 Requires:       %{name}-rpm-macros = %{version}-%{release}
 Requires:       %{name}-libs = %{version}-%{release}
-Recommends:     diffutils
 Requires:       util-linux
-Recommends:     libxkbcommon%{?_isa}
 Provides:       /bin/systemctl
 Provides:       /sbin/shutdown
 Provides:       syslog
@@ -216,9 +214,7 @@ Provides:       udev = %{version}
 Provides:       udev%{_isa} = %{version}
 Obsoletes:      udev < 183
 # https://bugzilla.redhat.com/show_bug.cgi?id=1377733#c9
-Recommends:     systemd-bootchart
 # https://bugzilla.redhat.com/show_bug.cgi?id=1408878
-Recommends:     kbd
 License:        LGPLv2+
 
 %description udev

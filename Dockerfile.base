@@ -2,5 +2,40 @@ FROM aursu/rpmbuild:7-build
 
 USER root
 RUN yum -y install \
-         libcap-devel \
+        libmount-devel \
+        pam-devel \
+        libselinux-devel \
+        audit-libs-devel \
+        cryptsetup-devel \
+        dbus-devel \
+        libacl-devel \
+        gobject-introspection-devel \
+        libblkid-devel \
+        xz-devel \
+        lz4-devel \
+        bzip2-devel \
+        libidn2-devel \
+        libcurl-devel \
+        kmod-devel \
+        elfutils-devel \
+        libgcrypt-devel \
+        libgpg-error-devel \
+        gnutls-devel \
+        qrencode-devel \
+        libmicrohttpd-devel \
+        libxkbcommon-devel \
+        iptables-devel \
+        libxslt \
+        docbook-style-xsl \
+        gperf \
+        tree \
+        python3-devel \
+        python3-lxml \
+        firewalld-filesystem \
+        gnu-efi \
+        gnu-efi-devel \
+        libseccomp-devel \
+        meson \
+        gettext \
+        valgrind-devel \
     && yum clean all && rm -rf /var/cache/yum
