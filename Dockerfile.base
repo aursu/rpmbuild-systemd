@@ -21,10 +21,10 @@ RUN yum -y install \
         libgcrypt-devel \
         libgpg-error-devel \
         gnutls-devel \
-        qrencode-devel \
         libmicrohttpd-devel \
         libxkbcommon-devel \
         iptables-devel \
+        libcap-devel \
         libxslt \
         docbook-style-xsl \
         gperf \
@@ -37,5 +37,4 @@ RUN yum -y install \
         libseccomp-devel \
         meson \
         gettext \
-        valgrind-devel \
     && yum clean all && rm -rf /var/cache/yum
