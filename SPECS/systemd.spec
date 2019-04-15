@@ -63,7 +63,7 @@ Patch0998:      0998-resolved-create-etc-resolv.conf-symlink-at-runtime.patch
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  libcap-devel
-BuildRequires:  libmount-devel
+BuildRequires:  libmount-devel >= 2.30
 BuildRequires:  pam-devel
 BuildRequires:  libselinux-devel
 BuildRequires:  audit-libs-devel
@@ -78,7 +78,7 @@ BuildRequires:  lz4-devel
 BuildRequires:  lz4
 BuildRequires:  bzip2-devel
 BuildRequires:  libidn2-devel
-BuildRequires:  libcurl-devel
+BuildRequires:  libcurl-devel >= 7.32.0
 BuildRequires:  kmod-devel
 BuildRequires:  elfutils-devel
 BuildRequires:  libgcrypt-devel
@@ -95,8 +95,12 @@ BuildRequires:  gperf
 BuildRequires:  gawk
 BuildRequires:  tree
 BuildRequires:  hostname
+%if 0%{?fedora} || 0%{?rhel} >= 8
 BuildRequires:  python3-devel
 BuildRequires:  python3-lxml
+%else
+BuildRequires:  python36-devel
+%endif
 BuildRequires:  firewalld-filesystem
 %if 0%{?have_gnu_efi}
 BuildRequires:  gnu-efi gnu-efi-devel
@@ -321,7 +325,7 @@ CONFIGURE_OPTS=(
         -Dnobody-group=nobody
         -Dsplit-usr=false
         -Dsplit-bin=true
-        -Db_lto=true
+        -Db_lto=false
         -Db_ndebug=false
         -Dversion-tag=v%{version}-%{release}
 )
@@ -402,16 +406,20 @@ touch %{buildroot}%{_localstatedir}/lib/private/systemd/journal-upload/state
 # Install yum protection fragment
 install -Dm0644 %{SOURCE4} %{buildroot}/etc/dnf/protected.d/systemd.conf
 
+mkdir -p %{buildroot}/usr/lib/firewalld/services/
 install -Dm0644 -t %{buildroot}/usr/lib/firewalld/services/ %{SOURCE7} %{SOURCE8}
 
 # Restore systemd-user pam config from before "removal of Fedora-specific bits"
+mkdir -p %{buildroot}/etc/pam.d/
 install -Dm0644 -t %{buildroot}/etc/pam.d/ %{SOURCE12}
 
 # Install additional docs
 # https://bugzilla.redhat.com/show_bug.cgi?id=1234951
+mkdir -p %{buildroot}%{_pkgdocdir}/
 install -Dm0644 -t %{buildroot}%{_pkgdocdir}/ %{SOURCE9}
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1378974
+mkdir -p %{buildroot}%{system_unit_dir}/systemd-udev-trigger.service.d/
 install -Dm0644 -t %{buildroot}%{system_unit_dir}/systemd-udev-trigger.service.d/ %{SOURCE10}
 
 # A temporary work-around for https://bugzilla.redhat.com/show_bug.cgi?id=1663040
@@ -421,8 +429,10 @@ cat >%{buildroot}%{system_unit_dir}/systemd-hostnamed.service.d/disable-privated
 PrivateDevices=no
 EOF
 
+mkdir -p %{buildroot}%{_prefix}/lib/kernel/install.d/
 install -Dm0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE11}
 
+mkdir -p %{buildroot}/usr/lib/systemd/
 install -D -t %{buildroot}/usr/lib/systemd/ %{SOURCE3}
 
 sed -i 's|#!/usr/bin/env python3|#!%{__python3}|' %{buildroot}/usr/lib/systemd/tests/run-unit-tests.py

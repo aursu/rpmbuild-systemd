@@ -2,39 +2,44 @@ FROM aursu/rpmbuild:7-build
 
 USER root
 RUN yum -y install \
-        libmount-devel \
-        pam-devel \
-        libselinux-devel \
         audit-libs-devel \
-        cryptsetup-devel \
-        dbus-devel \
-        libacl-devel \
-        gobject-introspection-devel \
-        libblkid-devel \
-        xz-devel \
-        lz4-devel \
         bzip2-devel \
-        libidn2-devel \
-        libcurl-devel \
-        kmod-devel \
-        elfutils-devel \
-        libgcrypt-devel \
-        libgpg-error-devel \
-        gnutls-devel \
-        libmicrohttpd-devel \
-        libxkbcommon-devel \
-        iptables-devel \
-        libcap-devel \
-        libxslt \
+        cryptsetup-devel \
         docbook-style-xsl \
-        gperf \
-        tree \
-        python3-devel \
-        python3-lxml \
+        elfutils-devel \
         firewalld-filesystem \
+        gettext \
         gnu-efi \
         gnu-efi-devel \
+        gnutls-devel \
+        gobject-introspection-devel \
+        gperf \
+        iptables-devel \
+        kmod-devel \
+        libacl-devel \
+        libcap-devel \
+        libgcrypt-devel \
+        libgpg-error-devel \
+        libidn2-devel \
+        libmicrohttpd-devel \
         libseccomp-devel \
+        libselinux-devel \
+        libxkbcommon-devel \
+        libxslt \
+        lz4-devel \
         meson \
-        gettext \
+        pam-devel \
+        python3-lxml \
+        python36-devel \
+        qrencode-devel \
+        tree \
+        valgrind-devel \
+        xz-devel \
+    && yum clean all && rm -rf /var/cache/yum
+
+RUN yum -y --enablerepo=bintray-custom install \
+        dbus-devel \
+        libblkid-devel \
+        libcurl-devel \
+        libmount-devel \
     && yum clean all && rm -rf /var/cache/yum
