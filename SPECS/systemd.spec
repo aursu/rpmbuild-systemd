@@ -100,6 +100,7 @@ BuildRequires:  python3-devel
 BuildRequires:  python3-lxml
 %else
 BuildRequires:  python36-devel
+BuildRequires:  python36-lxml
 %endif
 BuildRequires:  firewalld-filesystem
 %if 0%{?have_gnu_efi}
