@@ -1,5 +1,6 @@
 FROM aursu/systemdbuild:7-base
 
+COPY rpmmacros ${BUILD_HOME}/.rpmmacros
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS
 

@@ -329,12 +329,20 @@ CONFIGURE_OPTS=(
         -Db_lto=false
         -Db_ndebug=false
         -Dversion-tag=v%{version}-%{release}
+        -Ddocdir=%{_pkgdocdir}
 )
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
 %meson "${CONFIGURE_OPTS[@]}"
 %meson_build
 
 %install
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 %meson_install
 
 # udev links
@@ -478,11 +486,15 @@ python3 %{SOURCE2} %buildroot <<EOF
 EOF
 
 %check
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 %ninja_test -C %{_vpath_builddir}
 
 #############################################################################################
-
-%include %{SOURCE1}
+## CentOS 7 has RPM 4.11 which does not support file triggers
+## %%include %{SOURCE1}
 
 %pre
 getent group cdrom &>/dev/null || groupadd -r -g 11 cdrom &>/dev/null || :
