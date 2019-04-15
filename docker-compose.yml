@@ -4,6 +4,12 @@ services:
     cap_add:
       - SYS_ADMIN
     volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    security_opt:
+      - seccomp:unconfined
+    tmpfs:
+      - /run
+    volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
     build:
