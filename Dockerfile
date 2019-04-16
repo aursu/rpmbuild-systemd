@@ -6,6 +6,9 @@ COPY SPECS ${BUILD_TOPDIR}/SPECS
 
 RUN chown -R $BUILD_USER ${BUILD_TOPDIR}/{SOURCES,SPECS}
 
+# https://github.com/systemd/systemd/issues/9666
+ENV TRAVIS true
+
 USER $BUILD_USER
 ENTRYPOINT ["/usr/bin/rpmbuild", "systemd.spec"]
 CMD ["-ba"]

@@ -487,9 +487,6 @@ EOF
 
 %check
 
-# Docker build issues:
-# https://github.com/systemd/systemd/issues/9666
-
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 

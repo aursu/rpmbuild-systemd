@@ -3,7 +3,6 @@ services:
   centos7systemdbuild:
     cap_add:
       - SYS_ADMIN
-      - NET_ADMIN
     security_opt:
       - seccomp:unconfined
     privileged: true
@@ -16,8 +15,6 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     build:
       context: .
-    environment:
-      TRAVIS: 'true'
 
 volumes:
   rpms:
