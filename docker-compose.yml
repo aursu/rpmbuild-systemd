@@ -17,7 +17,7 @@ services:
     build:
       context: .
     environment:
-      - TRAVIS=true
+      TRAVIS: true
 
 volumes:
   rpms:
