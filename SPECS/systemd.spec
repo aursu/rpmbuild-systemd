@@ -122,11 +122,11 @@ Requires(post): openssl-libs
 Requires(pre):  coreutils
 Requires(pre):  /usr/bin/getent
 Requires(pre):  /usr/sbin/groupadd
-Requires:       dbus >= 1.9.18
+Requires:       dbus >= 1.12.8
 Requires:       %{name}-pam = %{version}-%{release}
 Requires:       %{name}-rpm-macros = %{version}-%{release}
 Requires:       %{name}-libs = %{version}-%{release}
-Requires:       util-linux
+Requires:       util-linux >= 2.32.1
 Provides:       /bin/systemctl
 Provides:       /sbin/shutdown
 Provides:       syslog

@@ -1,16 +1,29 @@
 version: "3.4"
 services:
   centos7systemdbuild:
-    cap_add:
-      - SYS_ADMIN
-    privileged: true
-    user: root
     volumes:
       - rpms:/root/rpmbuild/SRPMS
       - rpm7:/root/rpmbuild/RPMS
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cap_add:
+      - SYS_ADMIN
+    privileged: true
+    user: root
     build:
       context: .
+  centos7systemdtest:
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp=unconfined
+    tmpfs:
+      - /run
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: aursu/systemdbuild:7-runtime
 
 volumes:
   rpms:

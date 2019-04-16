@@ -29,10 +29,10 @@ jobs:
           name: Build PHP Docker images
           command: |
             docker-compose -f docker-compose.base.yml build
-            docker-compose build --no-cache
+            docker-compose build --no-cache centos7systemdbuild
       - run:
           name: Build RPM packages
-          command: docker-compose up
+          command: docker-compose up centos7systemdbuild
       - run:
           name: Upload RPM packages into Bintray
           command: |
