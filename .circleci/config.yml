@@ -7,7 +7,6 @@ jobs:
     environment:
       BINTRAY_REPO: custom
       PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-libzip
-      TRAVIS: "true"
     steps:
       - checkout
       - run:
@@ -33,7 +32,7 @@ jobs:
             docker-compose build --no-cache
       - run:
           name: Build RPM packages
-          command: sudo docker-compose up
+          command: docker-compose up
       - run:
           name: Upload RPM packages into Bintray
           command: |

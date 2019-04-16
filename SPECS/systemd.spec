@@ -490,8 +490,7 @@ EOF
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-export TRAVIS="true"
-TRAVIS="true" %{__ninja} test %{__ninja_common_opts} -C %{_vpath_builddir}
+%ninja_test -C %{_vpath_builddir}
 
 #############################################################################################
 ## CentOS 7 has RPM 4.11 which does not support file triggers

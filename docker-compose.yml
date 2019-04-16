@@ -3,20 +3,14 @@ services:
   centos7systemdbuild:
     cap_add:
       - SYS_ADMIN
-    security_opt:
-      - seccomp=unconfined
     privileged: true
     user: root
-    tmpfs:
-      - /run
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     build:
       context: .
-    environment:
-      - TRAVIS=true
 
 volumes:
   rpms:
