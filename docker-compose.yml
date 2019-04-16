@@ -4,7 +4,7 @@ services:
     cap_add:
       - SYS_ADMIN
     security_opt:
-      - seccomp:unconfined
+      - seccomp=unconfined
     privileged: true
     user: root
     tmpfs:
