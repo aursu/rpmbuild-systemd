@@ -489,6 +489,7 @@ EOF
 
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export TRAVIS=true
 
 %ninja_test -C %{_vpath_builddir}
 
