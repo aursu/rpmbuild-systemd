@@ -33,7 +33,7 @@ jobs:
             docker-compose build --no-cache
       - run:
           name: Build RPM packages
-          command: docker-compose up
+          command: sudo docker-compose up
       - run:
           name: Upload RPM packages into Bintray
           command: |

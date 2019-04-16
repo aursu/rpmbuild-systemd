@@ -10,5 +10,5 @@ RUN chown -R $BUILD_USER ${BUILD_TOPDIR}/{SOURCES,SPECS}
 ENV TRAVIS true
 
 USER $BUILD_USER
-ENTRYPOINT ["/usr/bin/rpmbuild", "systemd.spec"]
-CMD ["-ba"]
+CMD /usr/bin/rpmbuild -ba systemd.spec
+
