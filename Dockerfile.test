@@ -1,4 +1,4 @@
-FROM aursu/centos:7-systemd
+FROM aursu/rpmbuild:7-build-systemd
 
 USER root
 RUN yum -y --enablerepo=bintray-custom install \
