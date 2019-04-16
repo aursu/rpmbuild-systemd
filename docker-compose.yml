@@ -9,10 +9,11 @@ services:
     user: root
     tmpfs:
       - /run
+      - /tmp
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
     build:
       context: .
 
