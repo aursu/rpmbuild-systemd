@@ -16,6 +16,8 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     build:
       context: .
+    environment:
+      - TRAVIS=true
 
 volumes:
   rpms:
