@@ -15,7 +15,7 @@
 Name:           systemd
 Url:            https://www.freedesktop.org/wiki/Software/systemd
 Version:        242
-Release:        1%{?commit:.git%{shortcommit}}%{?dist}
+Release:        2%{?commit:.git%{shortcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
 Summary:        System and Service Manager
@@ -133,11 +133,10 @@ Provides:       syslog
 Provides:       systemd-units = %{version}-%{release}
 Obsoletes:      system-setup-keyboard < 0.9
 Provides:       system-setup-keyboard = 0.9
-# systemd-sysv-convert was removed in f20: https://fedorahosted.org/fpc/ticket/308
-Obsoletes:      systemd-sysv < 206
 # self-obsoletes so that dnf will install new subpackages on upgrade (#1260394)
 Obsoletes:      %{name} < 229-5
-Provides:       systemd-sysv = 206
+Obsoletes:      systemd-sysv < 229-5
+Provides:       systemd-sysv = 219
 Conflicts:      initscripts < 9.56.1
 %if 0%{?fedora}
 Conflicts:      fedora-release < 23-0.12
@@ -713,6 +712,9 @@ fi
 %files tests -f .file-list-tests
 
 %changelog
+* Wed Apr 17 2019 Alexander Ursu <alexander.ursu@gmail.com> - 242-2
+- obsoletes systed-sysv version 219
+
 * Thu Apr 11 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 242
 - Update to latest release
 - Make scriptlet failure non-fatal
