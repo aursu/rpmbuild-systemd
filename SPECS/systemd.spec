@@ -127,6 +127,7 @@ Requires:       %{name}-pam = %{version}-%{release}
 Requires:       %{name}-rpm-macros = %{version}-%{release}
 Requires:       %{name}-libs = %{version}-%{release}
 Requires:       util-linux >= 2.32.1
+Requires:       libcurl >= 7.64.1
 Provides:       /bin/systemctl
 Provides:       /sbin/shutdown
 Provides:       syslog
