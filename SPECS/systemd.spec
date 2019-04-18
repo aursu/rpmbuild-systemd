@@ -15,7 +15,7 @@
 Name:           systemd
 Url:            https://www.freedesktop.org/wiki/Software/systemd
 Version:        242
-Release:        2%{?commit:.git%{shortcommit}}%{?dist}
+Release:        3%{?commit:.git%{shortcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
 Summary:        System and Service Manager
@@ -713,8 +713,9 @@ fi
 %files tests -f .file-list-tests
 
 %changelog
-* Wed Apr 17 2019 Alexander Ursu <alexander.ursu@gmail.com> - 242-2
+* Wed Apr 17 2019 Alexander Ursu <alexander.ursu@gmail.com> - 242-3
 - obsoletes systed-sysv version 219
+- added libcurl version 7.64.1+ into dependencies
 
 * Thu Apr 11 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 242
 - Update to latest release
