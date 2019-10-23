@@ -1,7 +1,7 @@
-#global commit cbf14c9500d5e6820fd7d96166ca0bf75c6850df
+%global commit ef677436aa203c24816021dd698b57f219f0ff64
 %{?commit:%global shortcommit %(c=%{commit}; echo ${c:0:7})}
 
-#global stable 1
+%global stable 1
 
 # We ship a .pc file but don't want to have a dep on pkg-config. We
 # strip the automatically generated dep here and instead co-own the
@@ -14,8 +14,8 @@
 
 Name:           systemd
 Url:            https://www.freedesktop.org/wiki/Software/systemd
-Version:        242
-Release:        3%{?commit:.git%{shortcommit}}%{?dist}
+Version:        243
+Release:        4%{?commit:.git%{shortcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
 Summary:        System and Service Manager
@@ -52,7 +52,15 @@ i=1; for j in 00*patch; do printf "Patch%04d:      %s\n" $i $j; i=$((i+1));done|
 GIT_DIR=../../src/systemd/.git git diffab -M v233..master@{2017-06-15} -- hwdb/[67]* hwdb/parse_hwdb.py > hwdb.patch
 %endif
 
+# https://bugzilla.redhat.com/show_bug.cgi?id=1738828
+Patch0001:      https://github.com/keszybz/systemd/commit/464a73411c13596a130a7a8f0ac00ca728e5f69e.patch
+
 Patch0002:      0002-Revert-units-set-NoNewPrivileges-for-all-long-runnin.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1728240
+# https://github.com/systemd/systemd/issues/13773
+# https://github.com/systemd/systemd/pull/13792
+Patch0003:      13792.patch
 
 Patch0998:      0998-resolved-create-etc-resolv.conf-symlink-at-runtime.patch
 
@@ -142,6 +150,8 @@ Conflicts:      initscripts < 9.56.1
 %if 0%{?fedora}
 Conflicts:      fedora-release < 23-0.12
 %endif
+Obsoletes:	timedatex < 0.6-3
+Provides:       timedatex = 0.6-3
 
 %description
 systemd is a system and service manager that runs as PID 1 and starts
@@ -157,6 +167,10 @@ date, locale, maintain a list of logged-in users, system accounts,
 runtime directories and settings, and daemons to manage simple network
 configuration, network time synchronization, log forwarding, and name
 resolution.
+%if 0%{?stable}
+This package was built from the %{version}-stable branch of systemd,
+commit https://github.com/systemd/systemd-stable/commit/%{shortcommit}.
+%endif
 
 %package libs
 Summary:        systemd libraries
@@ -328,6 +342,7 @@ CONFIGURE_OPTS=(
         -Dsplit-bin=true
         -Db_lto=false
         -Db_ndebug=false
+        -Dman=true
         -Dversion-tag=v%{version}-%{release}
         -Ddocdir=%{_pkgdocdir}
 )
@@ -359,11 +374,6 @@ install -Dm0644 -t %{buildroot}/etc/ %{SOURCE5}
 # /etc/sysctl.conf compat
 install -Dm0644 %{SOURCE6} %{buildroot}/etc/sysctl.conf
 ln -s ../sysctl.conf %{buildroot}/etc/sysctl.d/99-sysctl.conf
-
-# We create all wants links manually at installation time to make sure
-# they are not owned and hence overriden by rpm after the user deleted
-# them.
-rm -r %{buildroot}%{_sysconfdir}/systemd/system/*.target.wants
 
 # Make sure these directories are properly owned
 mkdir -p %{buildroot}%{system_unit_dir}/basic.target.wants
@@ -713,11 +723,79 @@ fi
 %files tests -f .file-list-tests
 
 %changelog
+* Fri Oct 18 2019 Adam Williamson <awilliam@redhat.com> - 243-4.gitef67743
+- Backport PR #13792 to fix nomodeset+BIOS CanGraphical bug (#1728240)
+
+* Thu Oct 10 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 243-3.gitef67743
+- Various minor documentation and error message cleanups
+- Do not use cgroup v1 hierarchy in nspawn on groups v2 (#1756143)
+
+* Sat Sep 21 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 243-2.gitfab6f01
+- Backport a bunch of patches (memory access issues, improvements to error
+  reporting and handling in networkd, some misleading man page contents #1751363)
+- Fix permissions on static nodes (#1740664)
+- Make systemd-networks follow the RFC for DHPCv6 and radv timeouts
+- Fix one crash in systemd-resolved (#1703598)
+- Make journal catalog creation reproducible (avoid unordered hashmap use)
+- Mark the accelerometer in HP laptops as part of the laptop base
+- Fix relabeling of directories with relabel-extra.d/
+- Fix potential stuck noop jobs in pid1
+- Obsolete timedatex package (#1735584)
+
+* Tue Sep  3 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 243-1
+- Update to latest release
+- Emission of Session property-changed notifications from logind is fixed
+  (this was breaking the switching of sessions to and from gnome).
+- Security issue: unprivileged users were allowed to change DNS
+  servers configured in systemd-resolved. Now proper polkit authorization
+  is required.
+
+* Mon Aug 26 2019 Adam Williamson <awilliam@redhat.com> - 243~rc2-2
+- Backport PR #13406 to solve PATH ordering issue (#1744059)
+
+* Thu Aug 22 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 243~rc2-1
+- Update to latest pre-release. Fixes #1740113, #1717712.
+- The default scheduler for disks is set to BFQ (1738828)
+- The default cgroup hierarchy is set to unified (cgroups v2) (#1732114).
+  Use systemd.unified-cgroup-hierarchy=0 on the kernel command line to revert.
+  See https://fedoraproject.org/wiki/Changes/CGroupsV2.
+
+* Wed Aug 07 2019 Adam Williamson <awilliam@redhat.com> - 243~rc1-2
+- Backport PR #1737362 so we own /etc/systemd/system again (#1737362)
+
+* Tue Jul 30 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 243~rc1-1
+- Update to latest version (#1715699, #1696373, #1711065, #1718192)
+
+* Sat Jul 27 2019 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Sat Jul 20 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 242-6.git9d34e79
+- Ignore bad rdrand output on AMD CPUs (#1729268)
+- A bunch of backported patches from upstream: documentation, memory
+  access fixups, command output tweaks (#1708996)
+
+* Tue Jun 25 2019 Björn Esser <besser82@fedoraproject.org>- 242-5.git7a6d834
+- Rebuilt (libqrencode.so.4)
+
+* Tue Jun 25 2019 Miro Hrončok <mhroncok@redhat.com>- 242-4.git7a6d834
+- Rebuilt for iptables update (libip4tc.so.2)
+
+* Fri Apr 26 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 242-3.git7a6d834
+- Add symbol to mark vtable format changes (anything using sd_add_object_vtable
+  or sd_add_fallback_vtable needs to be rebuilt)
+- Fix wireguard ListenPort handling in systemd-networkd
+- Fix hang in flush_accept (#1702358)
+- Fix handling of RUN keys in udevd
+- Some documentation and shell completion updates and minor fixes
+
 * Wed Apr 17 2019 Alexander Ursu <alexander.ursu@gmail.com> - 242-3
-- obsoletes systed-sysv version 219
+- obsoletes systemd-sysv version 219
 - added libcurl version 7.64.1+ into dependencies
 
-* Thu Apr 11 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 242
+* Tue Apr 16 2019 Adam Williamson <awilliam@redhat.com> - 242-2
+- Rebuild with Meson fix for #1699099
+
+* Thu Apr 11 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 242-1
 - Update to latest release
 - Make scriptlet failure non-fatal
 
