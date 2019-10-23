@@ -18,12 +18,6 @@ jobs:
           command: |
             docker-compose -f rpmbuild/docker-compose.yml pull
             docker-compose -f rpmbuild/docker-compose.bintray.yml pull
-            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
-      - run:
-          name: Start docker services for rpmbuild
-          command: docker-compose -f rpmbuild/docker-compose.yml up -d
-          background: true
-          no_output_timeout: 2h
       - run:
           name: Build PHP Docker images
           command: |
@@ -40,8 +34,3 @@ jobs:
               -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
               -e BINTRAY_REPO=$BINTRAY_REPO \
               -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
-      - run:
-          name: Deploy Docker images
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/systemdbuild:7-base
