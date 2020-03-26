@@ -479,10 +479,11 @@ install -D -t %{buildroot}/usr/lib/systemd/ %{SOURCE3}
 
 sed -i 's|#!/usr/bin/env python3|#!%{__python3}|' %{buildroot}/usr/lib/systemd/tests/run-unit-tests.py
 
-install -m 0644 -D -t %{buildroot}%{_rpmconfigdir}/macros.d/ %{SOURCE21}
-install -m 0644 -D -t %{buildroot}%{_rpmconfigdir}/fileattrs/ %{SOURCE22}
-install -m 0755 -D -t %{buildroot}%{_rpmconfigdir}/ %{SOURCE23}
-install -m 0755 -D -t %{buildroot}%{_rpmconfigdir}/ %{SOURCE24}
+mkdir -p %{buildroot}%{_rpmconfigdir}/{macros.d,fileattrs}
+install -m 0644 -t %{buildroot}%{_rpmconfigdir}/macros.d/ %{SOURCE21}
+install -m 0644 -t %{buildroot}%{_rpmconfigdir}/fileattrs/ %{SOURCE22}
+install -m 0755 -t %{buildroot}%{_rpmconfigdir}/ %{SOURCE23}
+install -m 0755 -t %{buildroot}%{_rpmconfigdir}/ %{SOURCE24}
 
 %find_lang %{name}
 
@@ -763,6 +764,7 @@ fi
 %files pam -f .file-list-pam
 
 %files rpm-macros -f .file-list-rpm-macros
+%{_rpmconfigdir}
 
 %files devel -f .file-list-devel
 
