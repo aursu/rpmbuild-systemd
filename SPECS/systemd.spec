@@ -71,6 +71,8 @@ Patch0998:      0998-resolved-create-etc-resolv.conf-symlink-at-runtime.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1803293
 Patch1000:      0001-Revert-job-Don-t-mark-as-redundant-if-deps-are-relev.patch
 
+Patch2000:      no-test-namespace.patch
+
 %ifarch %{ix86} x86_64 aarch64
 %global have_gnu_efi 1
 %endif

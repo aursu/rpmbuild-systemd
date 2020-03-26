@@ -1,0 +1,16 @@
+diff -rup systemd-stable-245.3.orig/src/test/meson.build systemd-stable-245.3/src/test/meson.build
+--- systemd-stable-245.3.orig/src/test/meson.build	2020-03-26 13:09:28.000000000 +0000
++++ systemd-stable-245.3/src/test/meson.build	2020-03-26 20:46:21.401309283 +0000
+@@ -382,12 +382,6 @@ tests += [
+          [],
+          []],
+ 
+-        [['src/test/test-namespace.c'],
+-         [libcore,
+-          libshared],
+-         [threads,
+-          libblkid]],
+-
+         [['src/test/test-verbs.c'],
+          [],
+          []],
