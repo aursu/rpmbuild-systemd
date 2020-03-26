@@ -20,6 +20,7 @@ services:
       - seccomp=unconfined
     tmpfs:
       - /run
+      - /tmp
     build:
       context: .
       dockerfile: Dockerfile.test

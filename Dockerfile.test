@@ -7,3 +7,6 @@ RUN yum -y --enablerepo=bintray-custom install \
         systemd \
         util-linux \
     && yum clean all && rm -rf /var/cache/yum
+
+RUN passwd -d root \
+    && sed -i 's/nullok_secure/nullok/' /etc/pam.d/system-auth
