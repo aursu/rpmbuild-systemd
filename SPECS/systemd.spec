@@ -1,4 +1,4 @@
-%global commit ef677436aa203c24816021dd698b57f219f0ff64
+#global commit ef677436aa203c24816021dd698b57f219f0ff64
 %{?commit:%global shortcommit %(c=%{commit}; echo ${c:0:7})}
 
 %global stable 1
@@ -12,10 +12,12 @@
 %global system_unit_dir %{pkgdir}/system
 %global user_unit_dir %{pkgdir}/user
 
+%bcond_without tests
+
 Name:           systemd
 Url:            https://www.freedesktop.org/wiki/Software/systemd
-Version:        243
-Release:        4%{?commit:.git%{shortcommit}}%{?dist}
+Version:        245.2
+Release:        1%{?commit:.git%{shortcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
 Summary:        System and Service Manager
@@ -26,7 +28,11 @@ Summary:        System and Service Manager
 %if %{defined commit}
 Source0:        https://github.com/systemd/systemd%{?stable:-stable}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 %else
+%if 0%{?stable}
+Source0:        https://github.com/systemd/systemd-stable/archive/v%{github_version}/%{name}-%{github_version}.tar.gz
+%else
 Source0:        https://github.com/systemd/systemd/archive/v%{github_version}/%{name}-%{github_version}.tar.gz
+%endif
 %endif
 # This file must be available before %%prep.
 # It is generated during systemd build and can be found in build/src/core/.
@@ -46,6 +52,11 @@ Source10:       systemd-udev-trigger-no-reload.conf
 Source11:       20-grubby.install
 Source12:       systemd-user
 
+Source21:       macros.sysusers
+Source22:       sysusers.attr
+Source23:       sysusers.prov
+Source24:       sysusers.generate-pre.sh
+
 %if 0
 GIT_DIR=../../src/systemd/.git git format-patch-ab --no-signature -M -N v235..v235-stable
 i=1; for j in 00*patch; do printf "Patch%04d:      %s\n" $i $j; i=$((i+1));done|xclip
@@ -53,16 +64,12 @@ GIT_DIR=../../src/systemd/.git git diffab -M v233..master@{2017-06-15} -- hwdb/[
 %endif
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1738828
-Patch0001:      https://github.com/keszybz/systemd/commit/464a73411c13596a130a7a8f0ac00ca728e5f69e.patch
-
-Patch0002:      0002-Revert-units-set-NoNewPrivileges-for-all-long-runnin.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1728240
-# https://github.com/systemd/systemd/issues/13773
-# https://github.com/systemd/systemd/pull/13792
-Patch0003:      13792.patch
+Patch0001:      use-bfq-scheduler.patch
 
 Patch0998:      0998-resolved-create-etc-resolv.conf-symlink-at-runtime.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1803293
+Patch1000:      0001-Revert-job-Don-t-mark-as-redundant-if-deps-are-relev.patch
 
 %ifarch %{ix86} x86_64 aarch64
 %global have_gnu_efi 1
@@ -72,6 +79,8 @@ BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  libcap-devel
 BuildRequires:  libmount-devel >= 2.30
+BuildRequires:  libfdisk-devel
+BuildRequires:  libpwquality-devel
 BuildRequires:  pam-devel
 BuildRequires:  libselinux-devel
 BuildRequires:  audit-libs-devel
@@ -120,6 +129,7 @@ BuildRequires:  meson >= 0.43
 BuildRequires:  gettext
 # We use RUNNING_ON_VALGRIND in tests, so the headers need to be available
 BuildRequires:  valgrind-devel
+BuildRequires:  pkgconfig(bash-completion)
 
 Requires(post): coreutils
 Requires(post): sed
@@ -150,8 +160,12 @@ Conflicts:      initscripts < 9.56.1
 %if 0%{?fedora}
 Conflicts:      fedora-release < 23-0.12
 %endif
-Obsoletes:	timedatex < 0.6-3
+Obsoletes:      timedatex < 0.6-3
 Provides:       timedatex = 0.6-3
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1753381
+Provides:       u2f-hidraw-policy = 1.0.2-40
+Obsoletes:      u2f-hidraw-policy < 1.0.2-40
 
 %description
 systemd is a system and service manager that runs as PID 1 and starts
@@ -202,8 +216,11 @@ Summary:        Macros that define paths and scriptlets related to systemd
 BuildArch:      noarch
 
 %description rpm-macros
-Just the definitions of rpm macros. Use %%{?systemd_requires} in the
-binary packages that use any scriptlets from this package.
+Just the definitions of rpm macros.
+
+See
+https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_systemd
+for information how to use those macros.
 
 %package devel
 Summary:        Development headers for systemd
@@ -234,6 +251,7 @@ Provides:       udev%{_isa} = %{version}
 Obsoletes:      udev < 183
 # https://bugzilla.redhat.com/show_bug.cgi?id=1377733#c9
 # https://bugzilla.redhat.com/show_bug.cgi?id=1408878
+Requires:       kbd
 License:        LGPLv2+
 
 %description udev
@@ -299,10 +317,13 @@ CONFIGURE_OPTS=(
         -Dsysvinit-path=/etc/rc.d/init.d
         -Drc-local=/etc/rc.d/rc.local
         -Dntp-servers='0.%{ntpvendor}.pool.ntp.org 1.%{ntpvendor}.pool.ntp.org 2.%{ntpvendor}.pool.ntp.org 3.%{ntpvendor}.pool.ntp.org'
+        -Duser-path=/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin
+        -Dservice-watchdog=
         -Ddev-kvm-mode=0666
         -Dkmod=true
         -Dxkbcommon=true
         -Dblkid=true
+        -Dfdisk=true
         -Dseccomp=true
         -Dima=true
         -Dselinux=true
@@ -315,11 +336,13 @@ CONFIGURE_OPTS=(
         -Dpam=true
         -Dacl=true
         -Dsmack=true
+        -Dp11kit=true
         -Dgcrypt=true
         -Daudit=true
         -Delfutils=true
         -Dlibcryptsetup=true
         -Delfutils=true
+        -Dpwquality=true
         -Dqrencode=true
         -Dgnutls=true
         -Dmicrohttpd=true
@@ -456,6 +479,11 @@ install -D -t %{buildroot}/usr/lib/systemd/ %{SOURCE3}
 
 sed -i 's|#!/usr/bin/env python3|#!%{__python3}|' %{buildroot}/usr/lib/systemd/tests/run-unit-tests.py
 
+install -m 0644 -D -t %{buildroot}%{_rpmconfigdir}/macros.d/ %{SOURCE21}
+install -m 0644 -D -t %{buildroot}%{_rpmconfigdir}/fileattrs/ %{SOURCE22}
+install -m 0755 -D -t %{buildroot}%{_rpmconfigdir}/ %{SOURCE23}
+install -m 0755 -D -t %{buildroot}%{_rpmconfigdir}/ %{SOURCE24}
+
 %find_lang %{name}
 
 # Split files in build root into rpms. See split-files.py for the
@@ -500,7 +528,9 @@ EOF
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-%ninja_test -C %{_vpath_builddir}
+%if %{with tests}
+meson test -C %{_vpath_builddir} -t 6
+%endif
 
 #############################################################################################
 ## CentOS 7 has RPM 4.11 which does not support file triggers
@@ -527,7 +557,26 @@ getent passwd systemd-resolve &>/dev/null || useradd -r -u 193 -l -g systemd-res
 
 %post
 systemd-machine-id-setup &>/dev/null || :
-systemctl daemon-reexec &>/dev/null || :
+systemctl daemon-reexec &>/dev/null || {
+  # systemd v239 had bug #9553 in D-Bus authentication of the private socket,
+  # which was later fixed in v240 by #9625.
+  #
+  # The end result is that a `systemctl daemon-reexec` call as root will fail
+  # when upgrading from systemd v239, which means the system will not start
+  # running the new version of systemd after this post install script runs.
+  #
+  # To work around this issue, let's fall back to using a `kill -TERM 1` to
+  # re-execute the daemon when the `systemctl daemon-reexec` call fails.
+  #
+  # In order to prevent issues when the reason why the daemon-reexec failed is
+  # not the aforementioned bug, let's only use this fallback when:
+  #   - we're upgrading this RPM package; and
+  #   - we confirm that systemd is running as PID1 on this system.
+  if [ $1 -gt 1 ] && [ -d /run/systemd/system ] ; then
+    kill -TERM 1 &>/dev/null || :
+  fi
+}
+
 journalctl --update-catalog &>/dev/null || :
 systemd-tmpfiles --create &>/dev/null || :
 
@@ -549,9 +598,12 @@ setfacl -Rnm g:wheel:rx,d:g:wheel:rx,g:adm:rx,d:g:adm:rx /var/log/journal/ &>/de
 # https://bugzilla.redhat.com/show_bug.cgi?id=1118740#c23
 # This will fix up enablement of any preset services that got installed
 # before systemd due to rpm ordering problems:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1647172
+# https://bugzilla.redhat.com/show_bug.cgi?id=1647172.
+# We also do this for user units, see
+# https://fedoraproject.org/wiki/Changes/Systemd_presets_for_user_units.
 if [ $1 -eq 1 ] ; then
         systemctl preset-all &>/dev/null || :
+        systemctl --global preset-all &>/dev/null || :
 fi
 
 %preun
@@ -723,6 +775,87 @@ fi
 %files tests -f .file-list-tests
 
 %changelog
+* Wed Mar 18 2020 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 245.2-1
+- Update to latest stable version (a few bug fixes for random things)
+  (#1798776, #1807485)
+- Modify the downstream udev rule to use bfq to only apply to disks (#1803500)
+- "Upgrade" dependency on kbd package from Recommends to Requires (#1408878)
+- Move systemd-bless-boot.service and systemd-boot-system-token.service to
+  systemd-udev subpackage (#1807462)
+- Move a bunch of other services to systemd-udev:
+  systemd-pstore.service, all fsck-related functionality,
+  systemd-volatile-root.service, systemd-verity-setup.service, and a few
+  other related files.
+- Fix namespace-related failure when starting systemd-homed (#1807465) and
+  group lookup failure in nss_systemd (#1809147)
+- Drop autogenerated BOOT_IMAGE= parameter from stored kernel command lines
+  (#1716164)
+- Update daemon-reexec fallback to check whether the system is booted with
+  systemd as PID 1 and check whether we're upgrading before using kill -TERM
+  on PID 1 (#1803240)
+
+* Tue Mar  3 2020 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 245~rc1-4
+- Don't require /proc to be mounted for systemd-sysusers to work (#1807768)
+
+* Tue Feb 18 2020 Adam Williamson <awilliam@redhat.com> - 245~rc1-3
+- Revert 097537f0 to fix plymouth etc. running when they shouldn't (#1803293)
+
+* Fri Feb  7 2020 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 245~rc1-2
+- Add default 'disable *' preset for user units (#1792474, #1468501),
+  see https://fedoraproject.org/wiki/Changes/Systemd_presets_for_user_units.
+- Add macro to generate "compat" scriptlets based off sysusers.d format
+  and autogenerate user() and group() virtual provides (#1792462),
+  see https://fedoraproject.org/wiki/Changes/Adopting_sysusers.d_format.
+- Revert patch to udev rules causing regression with usb hubs (#1800820).
+
+* Wed Feb  5 2020 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 245~rc1-1
+- New upstream release, see
+  https://raw.githubusercontent.com/systemd/systemd/v245-rc1/NEWS.
+
+  This release includes completely new functionality: systemd-repart,
+  systemd-homed, user reconds in json, and multi-instantiable
+  journald, and a partial rework of internal communcation to use
+  varlink, and bunch of more incremental changes.
+
+  The "predictable" interface name naming scheme is changed,
+  net.naming-scheme= can be used to undo the change. The change applies
+  to container interface names on the host.
+
+- Fixes #1774242, #1787089, #1798414/CVE-2020-1712.
+
+* Fri Jan 31 2020 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
+* Sat Dec 21 2019  <zbyszek@nano-f31> - 244.1-2
+- Disable service watchdogs (for systemd units)
+
+* Sun Dec 15 2019  <zbyszek@nano-f31> - 244.1-1
+- Update to latest stable batch (systemd-networkd fixups, better
+  support for seccomp on s390x, minor cleanups to documentation).
+- Drop patch to revert addition of NoNewPrivileges to systemd units
+
+* Fri Nov 29 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 244-1
+- Update to latest version. Just minor bugs fixed since the pre-release.
+
+* Fri Nov 22 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 244~rc1-1
+- Update to latest pre-release version,
+  see https://github.com/systemd/systemd/blob/master/NEWS#L3.
+  Biggest items: cgroups v2 cpuset controller, fido_id builtin in udev,
+  systemd-networkd does not create a default route for link local addressing,
+  systemd-networkd supports dynamic reconfiguration and a bunch of new settings.
+  Network files support matching on WLAN SSID and BSSID.
+- Better error messages when preset/enable/disable are used with a glob (#1763488)
+- u2f-hidraw-policy package is obsoleted (#1753381)
+
+* Tue Nov 19 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 243.4
+- Latest bugfix release. Systemd-stable snapshots will now be numbered.
+- Fix broken PrivateDevices filter on big-endian, s390x in particular (#1769148)
+- systemd-modules-load.service should only warn, not fail, on error (#1254340)
+- Fix incorrect certificate validation with DNS over TLS (#1771725, #1771726,
+  CVE-2018-21029)
+- Fix regression with crypttab keys with colons
+- Various memleaks and minor memory access issues, warning adjustments
+
 * Fri Oct 18 2019 Adam Williamson <awilliam@redhat.com> - 243-4.gitef67743
 - Backport PR #13792 to fix nomodeset+BIOS CanGraphical bug (#1728240)
 

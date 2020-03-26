@@ -48,7 +48,7 @@ for file in files(buildroot):
         continue
     if '/security/pam_' in n:
         o = o_pam
-    elif 'rpm/macros' in n:
+    elif '/rpm/' in n:
         o = o_rpm_macros
     elif re.search(r'/lib.*\.pc|/man3/|/usr/include|(?<!/libsystemd-shared-...).so$', n):
         o = o_devel
@@ -77,6 +77,9 @@ for file in files(buildroot):
     elif re.search(r'''udev(?!\.pc)|
                        hwdb|
                        bootctl|
+                       sd-boot|systemd-boot\.|loader.conf|
+                       bless-boot|
+                       boot-system-token|
                        kernel-install|
                        vconsole|
                        backlight|
@@ -87,14 +90,19 @@ for file in files(buildroot):
                        cryptsetup|
                        kmod|
                        quota|
+                       pstore|
                        sleep|suspend|hibernate|
                        systemd-tmpfiles-setup-dev|
                        network/99-default.link|
-                       growfs|makefs|makeswap|
+                       growfs|makefs|makeswap|mkswap|
+                       fsck|
+                       repart|
                        gpt-auto|
+                       volatile-root|
+                       verity-setup|
+                       remount-fs|
                        /boot$|
                        /boot/efi|
-                       remount-fs|
                        /kernel/|
                        /kernel$|
                        /modprobe.d

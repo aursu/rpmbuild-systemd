@@ -1,8 +1,9 @@
-FROM aursu/rpmbuild:7-build-root
+FROM aursu/rpmbuild:7.7.1908-build-root
 
 USER root
 RUN yum -y install \
         audit-libs-devel \
+        bash-completion \
         bzip2-devel \
         cryptsetup-devel \
         docbook-style-xsl \
@@ -18,10 +19,12 @@ RUN yum -y install \
         kmod-devel \
         libacl-devel \
         libcap-devel \
+        libfdisk-devel \
         libgcrypt-devel \
         libgpg-error-devel \
         libidn2-devel \
         libmicrohttpd-devel \
+        libpwquality-devel \
         libseccomp-devel \
         libselinux-devel \
         libxkbcommon-devel \
@@ -40,6 +43,7 @@ RUN yum -y --enablerepo=bintray-custom install \
         dbus-devel \
         libblkid-devel \
         libcurl-devel \
+        libfdisk-devel \
         libmount-devel \
         python36-lxml \
     && yum clean all && rm -rf /var/cache/yum
